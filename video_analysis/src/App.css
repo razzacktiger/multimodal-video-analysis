@@ -49,18 +49,12 @@
 
 .embed-responsive-item {
     position: absolute;
-    top: 58%;
-    left: 71%;
+    top: 50%;
+    left: 64%;
     transform: translate(-50%, -50%);
-    width: 25%;
-    height: 40vh;
-    z-index: 1;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: block;
-    overflow: hidden;
-    object-fit: contain;
+    width: 50%;
+    height: 50%;
+    z-index: 1000;
 }
 
 .subtitle-timestamps {
