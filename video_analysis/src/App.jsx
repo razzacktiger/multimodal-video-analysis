@@ -62,7 +62,7 @@ export default function App() {
 
   return (
     <>
-    <h1 className="title">YouTube Video Viewer</h1>
+    <h1 className="title">Multimodal video analysis tool</h1>
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <Container className="mt-4 text-center" fluid>
         <Row className="justify-content-center">
@@ -82,9 +82,9 @@ export default function App() {
             </Form>
           </Col>
         </Row>
-        <Row className="justify-content-center">
-          <Col md={12} lg={10} className="d-flex justify-content-center">
-            <div className='ratio ratio-16x9' style={{ maxHeight: '80vh', width: '100%', maxWidth: '1200px' }}>
+        <Row className="embed-responsive-item">
+          <Col>
+            <div className='ratio ratio-16x9'>
               <iframe
                 src={videoUrl}
                 title="YouTube video"
@@ -97,12 +97,12 @@ export default function App() {
 
         <Row className="justify-content-center mt-4">
           <Col md={8}>
-            <h3>Video Timestamps</h3>
+            <h3 className='subtitle-timestamps'>Video Timestamps</h3>
             <Button
               variant="success"
               onClick={generateTimestamps}
               disabled={loading}
-              className="mb-3"
+              className="generate-button"
             >
               {loading ? (
                 <>
@@ -122,9 +122,9 @@ export default function App() {
                   ))}
                 </ul>
               </div>
-            ) : !loading && (
-              <p>Click the button above to generate timestamps for this video</p>
-            )}
+            ) : !loading && (error === '' || error === 'Failed to generate timestamps. Please try again later.') ? (
+              <div className="alert-info">No timestamps generated yet. Click the button to generate.</div>
+            ) : null}
           </Col>
         </Row>
       </Container>
