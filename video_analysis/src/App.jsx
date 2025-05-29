@@ -38,7 +38,7 @@ export default function App() {
     
     try {
       const genAI = new GoogleGenerativeAI("AIzaSyA16GvRnUOfXiOJTtk88HgSIZtvlTobg5A");
-      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
       
       const result = await model.generateContent([
         "Please create time-stamps for the video and make sure its in the format of 00:00 - title.",
