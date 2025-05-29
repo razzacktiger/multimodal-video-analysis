@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Container, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import './App.css'; // Assuming you have some custom styles
 
 export default function App() {
   const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/xNRJwmlRBNU?si=ptewSZO2p0Mjs45V');
@@ -60,22 +61,22 @@ export default function App() {
   };
 
   return (
+    <>
+    <h1 className="title">YouTube Video Viewer</h1>
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <Container className="mt-4 text-center" fluid>
-        <h1 className="mb-4 text-center">YouTube Video Viewer</h1>
         <Row className="justify-content-center">
           <Col md={8} className="mb-4 d-flex justify-content-center">
             <Form onSubmit={handleSubmit} className="d-flex flex-column align-items-center w-100">
               <Form.Group className="mb-3 w-100">
-                <Form.Label className="text-center d-block">Enter YouTube Video URL</Form.Label>
-                <Form.Control 
+                <Form.Label className="subtitle">Enter YouTube Video URL</Form.Label>
+                <Form.Control
                   type="text"
                   name="videoInput"
                   placeholder="https://www.youtube.com/watch?v=..."
-                  className="text-center"
-                />
+                  className="user-input" />
               </Form.Group>
-              <Button variant="primary" type="submit" className="mx-auto">
+              <Button variant="primary" type="submit" className="load-button">
                 Load Video
               </Button>
             </Form>
@@ -84,22 +85,22 @@ export default function App() {
         <Row className="justify-content-center">
           <Col md={12} lg={10} className="d-flex justify-content-center">
             <div className='ratio ratio-16x9' style={{ maxHeight: '80vh', width: '100%', maxWidth: '1200px' }}>
-              <iframe 
-                src={videoUrl} 
-                title="YouTube video" 
+              <iframe
+                src={videoUrl}
+                title="YouTube video"
                 allowFullScreen
-                className="w-100 h-100"
+                className="embed-responsive-item"
               ></iframe>
             </div>
           </Col>
         </Row>
-        
+
         <Row className="justify-content-center mt-4">
           <Col md={8}>
             <h3>Video Timestamps</h3>
-            <Button 
-              variant="success" 
-              onClick={generateTimestamps} 
+            <Button
+              variant="success"
+              onClick={generateTimestamps}
               disabled={loading}
               className="mb-3"
             >
@@ -110,9 +111,9 @@ export default function App() {
                 </>
               ) : "Generate Timestamps"}
             </Button>
-            
+
             {error && <div className="alert alert-danger">{error}</div>}
-            
+
             {timestamps.length > 0 ? (
               <div className="timestamps-container bg-light p-3 rounded text-start">
                 <ul className="list-unstyled">
@@ -127,6 +128,6 @@ export default function App() {
           </Col>
         </Row>
       </Container>
-    </div>
+    </div></>
   );
 }
