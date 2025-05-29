@@ -1,9 +1,14 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Form, Button } from 'react-bootstrap';
+import { Container, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 export default function App() {
   const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/xNRJwmlRBNU?si=ptewSZO2p0Mjs45V');
+  const [videoId, setVideoId] = useState('xNRJwmlRBNU');
+  const [timestamps, setTimestamps] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
   
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -11,25 +16,55 @@ export default function App() {
     // Convert YouTube URL to embed URL
     if (inputUrl) {
       // Handle different YouTube URL formats
-      let videoId = '';
+      let extractedVideoId = '';
       if (inputUrl.includes('youtube.com/watch?v=')) {
-        videoId = new URL(inputUrl).searchParams.get('v');
+        extractedVideoId = new URL(inputUrl).searchParams.get('v');
       } else if (inputUrl.includes('youtu.be/')) {
-        videoId = inputUrl.split('youtu.be/')[1].split('?')[0];
+        extractedVideoId = inputUrl.split('youtu.be/')[1].split('?')[0];
       }
       
-      if (videoId) {
-        setVideoUrl(`https://www.youtube.com/embed/${videoId}`);
+      if (extractedVideoId) {
+        setVideoUrl(`https://www.youtube.com/embed/${extractedVideoId}`);
+        setVideoId(extractedVideoId);
+        setTimestamps([]); // Clear previous timestamps
       }
+    }
+  };
+
+  const generateTimestamps = async () => {
+    setLoading(true);
+    setError('');
+    
+    try {
+      const genAI = new GoogleGenerativeAI("AIzaSyA16GvRnUOfXiOJTtk88HgSIZtvlTobg5A");
+      const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+      
+      const result = await model.generateContent([
+        "Please create time-stamps for the video and make sure its in the format of 00:00 - title.",
+        {
+          fileData: {
+            fileUri: `https://www.youtube.com/watch?v=${videoId}`,
+          },
+        },
+      ]);
+
+      const text = result.response.text();
+      const timestampLines = text.split('\n').filter(line => line.match(/\d+:\d+\s*-/));
+      setTimestamps(timestampLines);
+    } catch (err) {
+      setError('Failed to generate timestamps. Please try again later.');
+      console.error('Error generating timestamps:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
-      <Container className="mt-4 text-center">
+      <Container className="mt-4 text-center" fluid>
         <h1 className="mb-4 text-center">YouTube Video Viewer</h1>
         <Row className="justify-content-center">
-          <Col md={6} className="mb-4 d-flex justify-content-center">
+          <Col md={8} className="mb-4 d-flex justify-content-center">
             <Form onSubmit={handleSubmit} className="d-flex flex-column align-items-center w-100">
               <Form.Group className="mb-3 w-100">
                 <Form.Label className="text-center d-block">Enter YouTube Video URL</Form.Label>
@@ -47,8 +82,8 @@ export default function App() {
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col md={10} className="d-flex justify-content-center">
-            <div className='ratio ratio-16x9' style={{ maxHeight: '80vh', width: '100%' }}>
+          <Col md={12} lg={10} className="d-flex justify-content-center">
+            <div className='ratio ratio-16x9' style={{ maxHeight: '80vh', width: '100%', maxWidth: '1200px' }}>
               <iframe 
                 src={videoUrl} 
                 title="YouTube video" 
@@ -56,6 +91,39 @@ export default function App() {
                 className="w-100 h-100"
               ></iframe>
             </div>
+          </Col>
+        </Row>
+        
+        <Row className="justify-content-center mt-4">
+          <Col md={8}>
+            <h3>Video Timestamps</h3>
+            <Button 
+              variant="success" 
+              onClick={generateTimestamps} 
+              disabled={loading}
+              className="mb-3"
+            >
+              {loading ? (
+                <>
+                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
+                  <span className="ms-2">Generating...</span>
+                </>
+              ) : "Generate Timestamps"}
+            </Button>
+            
+            {error && <div className="alert alert-danger">{error}</div>}
+            
+            {timestamps.length > 0 ? (
+              <div className="timestamps-container bg-light p-3 rounded text-start">
+                <ul className="list-unstyled">
+                  {timestamps.map((timestamp, index) => (
+                    <li key={index} className="mb-2">{timestamp}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : !loading && (
+              <p>Click the button above to generate timestamps for this video</p>
+            )}
           </Col>
         </Row>
       </Container>
