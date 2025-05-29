@@ -25,7 +25,7 @@
 
 .user-input {
     position: absolute;
-    top: 25%;
+    top: 26%;
     left: 70%;
     transform: translate(-50%, -50%);
     width: 20%;
@@ -38,7 +38,7 @@
 
 .load-button {
     position: absolute;
-    top: 32%;
+    top: 33%;
     left: 70%;
     transform: translate(-50%, -50%);
     padding: 10px 20px;
@@ -53,11 +53,11 @@
 
 .embed-responsive-item {
     position: absolute;
-    top: 50%;
+    top: 52%;
     left: 64%;
     transform: translate(-50%, -50%);
-    width: 50%;
-    height: 50%;
+    width: 55%;
+    height: 55%;
 }
 
 .subtitle-timestamps {
