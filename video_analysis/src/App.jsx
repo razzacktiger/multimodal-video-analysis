@@ -27,27 +27,28 @@ export default function App() {
   return (
     <div className="d-flex justify-content-center align-items-center min-vh-100">
       <Container className="mt-4 text-center">
-        <h1 className="mb-4">YouTube Video Viewer</h1>
+        <h1 className="mb-4 text-center">YouTube Video Viewer</h1>
         <Row className="justify-content-center">
-          <Col md={6} className="mb-4">
-            <Form onSubmit={handleSubmit} className="d-flex flex-column align-items-center">
+          <Col md={6} className="mb-4 d-flex justify-content-center">
+            <Form onSubmit={handleSubmit} className="d-flex flex-column align-items-center w-100">
               <Form.Group className="mb-3 w-100">
-                <Form.Label>Enter YouTube Video URL</Form.Label>
+                <Form.Label className="text-center d-block">Enter YouTube Video URL</Form.Label>
                 <Form.Control 
                   type="text"
                   name="videoInput"
                   placeholder="https://www.youtube.com/watch?v=..."
+                  className="text-center"
                 />
               </Form.Group>
-              <Button variant="primary" type="submit">
+              <Button variant="primary" type="submit" className="mx-auto">
                 Load Video
               </Button>
             </Form>
           </Col>
         </Row>
         <Row className="justify-content-center">
-          <Col md={10}>
-            <div className='ratio ratio-16x9' style={{ maxHeight: '80vh' }}>
+          <Col md={10} className="d-flex justify-content-center">
+            <div className='ratio ratio-16x9' style={{ maxHeight: '80vh', width: '100%' }}>
               <iframe 
                 src={videoUrl} 
                 title="YouTube video" 
