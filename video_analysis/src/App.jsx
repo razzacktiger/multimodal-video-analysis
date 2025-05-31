@@ -136,31 +136,44 @@ export default function App() {
   };
 
   return (
-    <>
-      <h1 className="title">Multimodal video analysis tool</h1>
-      <div className="d-flex justify-content-center align-items-center min-vh-100">
-        <Container className="mt-4 text-center" fluid>
-          {/* URL Input Section */}
+    <div className="app-container">
+      {/* Header Section */}
+      <header className="app-header">
+        <Container fluid>
           <Row className="justify-content-center">
-            <Col md={8} className="mb-4 d-flex justify-content-center">
+            <Col md={12} className="text-center">
+              <h1 className="app-title">Multimodal Video Analysis Tool</h1>
+              <p className="app-subtitle">Analyze videos with AI-powered chat and timestamp navigation</p>
+            </Col>
+          </Row>
+          
+          {/* URL Input Section */}
+          <Row className="justify-content-center mt-4">
+            <Col md={8} lg={6} className="d-flex justify-content-center">
               <URLInput 
                 onVideoLoad={handleVideoLoad}
                 onError={handleError}
               />
             </Col>
           </Row>
-          
-          {/* Main Content Area */}
-          <Row className="embed-responsive-item">
-            {/* Video Player */}
-            <Col lg={8}>
-              <VideoPlayer 
-                ref={videoPlayerRef}
-                videoId={videoId}
-              />
+        </Container>
+      </header>
+      
+      {/* Main Content Area */}
+      <main className="app-main">
+        <Container fluid className="h-100">
+          <Row className="h-100">
+            {/* Video and Timestamps Section */}
+            <Col lg={6} className="video-section">
+              <div className="video-container">
+                <VideoPlayer 
+                  ref={videoPlayerRef}
+                  videoId={videoId}
+                />
+              </div>
               
-              {/* Timestamps Section - Below video on larger screens */}
-              <div className="mt-4">
+              {/* Timestamps Section */}
+              <div className="timestamps-container">
                 <TimestampList
                   timestamps={timestamps}
                   loading={loading}
@@ -171,19 +184,21 @@ export default function App() {
               </div>
             </Col>
             
-            {/* Chat Interface */}
-            <Col lg={4}>
-              <ChatInterface
-                messages={chatMessages}
-                loading={chatLoading}
-                onSendMessage={handleSendMessage}
-                onTimestampClick={handleTimestampClick}
-                videoId={videoId}
-              />
+            {/* Chat Interface Section - Now larger! */}
+            <Col lg={6} className="chat-section">
+              <div className="chat-container">
+                <ChatInterface
+                  messages={chatMessages}
+                  loading={chatLoading}
+                  onSendMessage={handleSendMessage}
+                  onTimestampClick={handleTimestampClick}
+                  videoId={videoId}
+                />
+              </div>
             </Col>
           </Row>
         </Container>
-      </div>
-    </>
+      </main>
+    </div>
   );
 }
