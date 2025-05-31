@@ -1,136 +1,189 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { Container, Row, Col, Form, Button, Spinner } from 'react-bootstrap';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-import './App.css'; // Assuming you have some custom styles
+import { Container, Row, Col } from 'react-bootstrap';
+import URLInput from './components/URLInput/URLInput';
+import VideoPlayer from './components/VideoPlayer/VideoPlayer';
+import TimestampList from './components/TimestampList/TimestampList';
+import ChatInterface from './components/ChatInterface/ChatInterface';
+import AIService from './utils/aiService';
+import './App.css';
 
 export default function App() {
-  // Variables for the URL, timestamps, and error handling. 
-  const [videoUrl, setVideoUrl] = useState('https://www.youtube.com/embed/xNRJwmlRBNU?si=ptewSZO2p0Mjs45V');
-  const [videoId, setVideoId] = useState('xNRJwmlRBNU');
+  // State management
+  const [videoId, setVideoId] = useState('xNRJwmlRBNU'); // Default video
   const [timestamps, setTimestamps] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   
-  // Effect to set the initial video URL and ID
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const inputUrl = e.target.elements.videoInput.value;
-    // Convert YouTube URL to embed URL
-    if (inputUrl) {
-      // Handle different YouTube URL formats
-      let extractedVideoId = '';
-      if (inputUrl.includes('youtube.com/watch?v=')) {
-        extractedVideoId = new URL(inputUrl).searchParams.get('v');
-      } else if (inputUrl.includes('youtu.be/')) {
-        extractedVideoId = inputUrl.split('youtu.be/')[1].split('?')[0];
+  // Chat state
+  const [chatMessages, setChatMessages] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
+  
+  // Refs
+  const videoPlayerRef = useRef(null);
+  
+  // AI Service instance
+  const [aiService, setAiService] = useState(null);
+  
+  // Initialize AI service when API key is available
+  useEffect(() => {
+    const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+    if (API_KEY) {
+      try {
+        setAiService(new AIService(API_KEY));
+        setError(''); // Clear any previous API key errors
+      } catch (err) {
+        setError('Failed to initialize AI service. Please check your API key.');
       }
-      
-      if (extractedVideoId) {
-        setVideoUrl(`https://www.youtube.com/embed/${extractedVideoId}`);
-        setVideoId(extractedVideoId);
-        setTimestamps([]); // Clear previous timestamps
-      }
+    } else {
+      setError('Google AI API key is not configured. Please add VITE_GOOGLE_AI_API_KEY to your .env file.');
     }
+  }, []);
+  
+  // Handle video loading from URL input
+  const handleVideoLoad = (newVideoId) => {
+    setVideoId(newVideoId);
+    setTimestamps([]); // Clear previous timestamps
+    setChatMessages([]); // Clear chat history
+    setError(''); // Clear any previous errors
   };
-
-  // Function to generate timestamps using Google Generative AI
-  const generateTimestamps = async () => {
+  
+  // Handle timestamp generation
+  const handleGenerateTimestamps = async () => {
+    if (!aiService) {
+      setError('AI service is not initialized. Please check your API key.');
+      return;
+    }
+    
     setLoading(true);
     setError('');
     
     try {
-      const genAI = new GoogleGenerativeAI("AIzaSyA16GvRnUOfXiOJTtk88HgSIZtvlTobg5A");
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
-      
-      const result = await model.generateContent([
-        "Please create time-stamps for the video and make sure its in the format of 00:00 - title.",
-        {
-          fileData: {
-            fileUri: `https://www.youtube.com/watch?v=${videoId}`,
-          },
-        },
-      ]);
-
-      const text = result.response.text();
-      const timestampLines = text.split('\n').filter(line => line.match(/\d+:\d+\s*-/));
-      setTimestamps(timestampLines);
+      const generatedTimestamps = await aiService.generateTimestamps(videoId);
+      setTimestamps(generatedTimestamps);
     } catch (err) {
-      setError('Failed to generate timestamps. Please try again later.');
-      console.error('Error generating timestamps:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+  
+  // Handle timestamp click to seek video
+  const handleTimestampClick = (timeInSeconds) => {
+    console.log(`App.jsx: Received timestamp click for ${timeInSeconds} seconds`);
+    
+    if (videoPlayerRef.current) {
+      console.log('App.jsx: Video player ref found, calling seekTo');
+      videoPlayerRef.current.seekTo(timeInSeconds);
+    } else {
+      console.error('App.jsx: Video player ref not found');
+    }
+  };
+  
+  // Handle chat message sending
+  const handleSendMessage = async (message) => {
+    if (!aiService) {
+      setError('AI service is not initialized. Please check your API key.');
+      return;
+    }
+
+    // Add user message to chat
+    const userMessage = {
+      id: Date.now(),
+      type: 'user',
+      content: message,
+      timestamps: []
+    };
+    
+    setChatMessages(prev => [...prev, userMessage]);
+    setChatLoading(true);
+
+    try {
+      // Get AI response
+      const response = await aiService.chatWithVideo(
+        message, 
+        videoId, 
+        chatMessages, 
+        timestamps
+      );
+      
+      // Add AI response to chat
+      const aiMessage = {
+        id: Date.now() + 1,
+        type: 'ai',
+        content: response.content,
+        timestamps: response.timestamps || []
+      };
+      
+      setChatMessages(prev => [...prev, aiMessage]);
+    } catch (err) {
+      // Add error message to chat
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'ai',
+        content: `Sorry, I encountered an error: ${err.message}`,
+        timestamps: []
+      };
+      setChatMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setChatLoading(false);
+    }
+  };
+  
+  // Handle errors from components
+  const handleError = (errorMessage) => {
+    setError(errorMessage);
+  };
 
   return (
     <>
-    <h1 className="title">Multimodal video analysis tool</h1>
-    <div className="d-flex justify-content-center align-items-center min-vh-100">
-      <Container className="mt-4 text-center" fluid>
-        <Row className="justify-content-center">
-          <Col md={8} className="mb-4 d-flex justify-content-center">
-            <Form onSubmit={handleSubmit} className="d-flex flex-column align-items-center w-100">
-              <Form.Group className="mb-3 w-100">
-                <Form.Label className="subtitle">Enter YouTube Video URL</Form.Label>
-                <Form.Control
-                  type="text"
-                  name="videoInput"
-                  placeholder="https://www.youtube.com/watch?v=..."
-                  className="user-input" />
-              </Form.Group>
-              <Button variant="primary" type="submit" className="load-button">
-                Load Video
-              </Button>
-            </Form>
-          </Col>
-        </Row>
-        <Row className="embed-responsive-item">
-          <Col>
-            <div className='ratio ratio-16x9'>
-              <iframe
-                src={videoUrl}
-                title="YouTube video"
-                allowFullScreen
-                className="embed-responsive-item"
-              ></iframe>
-            </div>
-          </Col>
-        </Row>
-
-        <Row className="justify-content-center mt-4">
-          <Col md={8}>
-            <h3 className='subtitle-timestamps'>Video Timestamps</h3>
-            <Button
-              variant="success"
-              onClick={generateTimestamps}
-              disabled={loading}
-              className="generate-button"
-            >
-              {loading ? (
-                <>
-                  <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-                  <span className="ms-2">Generating...</span>
-                </>
-              ) : "Generate Timestamps"}
-            </Button>
-
-            {error && <div className="alert alert-danger">{error}</div>}
-
-            {timestamps.length > 0 ? (
-              <div className="timestamps-container bg-light p-3 rounded text-start">
-                <ul className="list-unstyled">
-                  {timestamps.map((timestamp, index) => (
-                    <li key={index} className="mb-2">{timestamp}</li>
-                  ))}
-                </ul>
+      <h1 className="title">Multimodal video analysis tool</h1>
+      <div className="d-flex justify-content-center align-items-center min-vh-100">
+        <Container className="mt-4 text-center" fluid>
+          {/* URL Input Section */}
+          <Row className="justify-content-center">
+            <Col md={8} className="mb-4 d-flex justify-content-center">
+              <URLInput 
+                onVideoLoad={handleVideoLoad}
+                onError={handleError}
+              />
+            </Col>
+          </Row>
+          
+          {/* Main Content Area */}
+          <Row className="embed-responsive-item">
+            {/* Video Player */}
+            <Col lg={8}>
+              <VideoPlayer 
+                ref={videoPlayerRef}
+                videoId={videoId}
+              />
+              
+              {/* Timestamps Section - Below video on larger screens */}
+              <div className="mt-4">
+                <TimestampList
+                  timestamps={timestamps}
+                  loading={loading}
+                  error={error}
+                  onGenerateTimestamps={handleGenerateTimestamps}
+                  onTimestampClick={handleTimestampClick}
+                />
               </div>
-            ) : !loading && (error === '' || error === 'Failed to generate timestamps. Please try again later.') ? (
-              <div className="alert-info">No timestamps generated yet. Click the button to generate.</div>
-            ) : null}
-          </Col>
-        </Row>
-      </Container>
-    </div></>
+            </Col>
+            
+            {/* Chat Interface */}
+            <Col lg={4}>
+              <ChatInterface
+                messages={chatMessages}
+                loading={chatLoading}
+                onSendMessage={handleSendMessage}
+                onTimestampClick={handleTimestampClick}
+                videoId={videoId}
+              />
+            </Col>
+          </Row>
+        </Container>
+      </div>
+    </>
   );
 }
