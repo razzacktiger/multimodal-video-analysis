@@ -20,6 +20,8 @@ class AIService {
    */
   async generateTimestamps(videoId) {
     try {
+      console.log(`AIService: Generating timestamps for video ID: ${videoId}`);
+      
       const result = await this.model.generateContent([
         "Please create time-stamps for the video and make sure its in the format of 00:00 - title. Provide clear, descriptive titles for each section.",
         {
@@ -28,12 +30,51 @@ class AIService {
           },
         },
       ]);
-
+      
+      // Check if response was blocked
+      if (result.response.promptFeedback?.blockReason) {
+        const blockReason = result.response.promptFeedback.blockReason;
+        console.error('AIService: Response blocked due to:', blockReason);
+        throw new Error(`Content was blocked by safety filters: ${blockReason}. Try with a different video.`);
+      }
+      
+      // Check if response has candidates
+      if (!result.response.candidates || result.response.candidates.length === 0) {
+        console.error('AIService: No response candidates available');
+        throw new Error('No response generated. The video might not be accessible or suitable for analysis.');
+      }
+      
+      // Check finish reason
+      const finishReason = result.response.candidates[0].finishReason;
+      if (finishReason === 'SAFETY') {
+        console.error('AIService: Response blocked due to safety concerns');
+        throw new Error('Content was blocked by safety filters. Try with a different video.');
+      }
+      
       const text = result.response.text();
-      return extractTimestampLines(text);
+      const timestamps = extractTimestampLines(text);
+      
+      return timestamps;
     } catch (error) {
       console.error('Error generating timestamps:', error);
-      throw new Error('Failed to generate timestamps. Please check your API key and try again.');
+      
+      // Handle specific Google AI errors
+      if (error.message.includes('Response was blocked')) {
+        throw new Error('This video content cannot be analyzed due to safety restrictions. Please try a different video.');
+      }
+      if (error.message.includes('Text not available')) {
+        throw new Error('Unable to analyze this video. It may be private, restricted, or not accessible to the AI model.');
+      }
+      if (error.message.includes('SAFETY')) {
+        throw new Error('Video content blocked by safety filters. Please try a different video.');
+      }
+      
+      // If it's already a custom error message, pass it through
+      if (error.message.includes('blocked by safety filters') || error.message.includes('not accessible')) {
+        throw error;
+      }
+      
+      throw new Error('Failed to generate timestamps. Please check your API key and try again with a different video.');
     }
   }
 
@@ -43,10 +84,16 @@ class AIService {
    * @param {string} videoId - YouTube video ID
    * @param {array} context - Previous conversation context
    * @param {array} existingTimestamps - Previously generated timestamps for context
+   * @param {AbortSignal} signal - Optional abort signal for cancellation
    * @returns {Promise<object>} - AI response with content and timestamps
    */
-  async chatWithVideo(message, videoId, context = [], existingTimestamps = []) {
+  async chatWithVideo(message, videoId, context = [], existingTimestamps = [], signal = null) {
     try {
+      // Check if already cancelled
+      if (signal?.aborted) {
+        throw new Error('Request was cancelled');
+      }
+
       // Build context from previous messages
       const conversationHistory = context.slice(-6).map(msg => 
         `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
@@ -83,6 +130,11 @@ User question: ${message}
 
 Provide a helpful response with natural language and relevant timestamps.`;
 
+      // Check for cancellation before making the request
+      if (signal?.aborted) {
+        throw new Error('Request was cancelled');
+      }
+
       const result = await this.model.generateContent([
         prompt,
         {
@@ -91,6 +143,31 @@ Provide a helpful response with natural language and relevant timestamps.`;
           },
         },
       ]);
+
+      // Check for cancellation after the request
+      if (signal?.aborted) {
+        throw new Error('Request was cancelled');
+      }
+      
+      // Check if response was blocked
+      if (result.response.promptFeedback?.blockReason) {
+        const blockReason = result.response.promptFeedback.blockReason;
+        console.error('AIService: Chat response blocked due to:', blockReason);
+        throw new Error(`Response was blocked by safety filters: ${blockReason}. Try asking a different question.`);
+      }
+      
+      // Check if response has candidates
+      if (!result.response.candidates || result.response.candidates.length === 0) {
+        console.error('AIService: No chat response candidates available');
+        throw new Error('No response generated. Try rephrasing your question.');
+      }
+      
+      // Check finish reason
+      const finishReason = result.response.candidates[0].finishReason;
+      if (finishReason === 'SAFETY') {
+        console.error('AIService: Chat response blocked due to safety concerns');
+        throw new Error('Response blocked by safety filters. Try asking a different question.');
+      }
 
       const responseText = result.response.text();
       
@@ -103,6 +180,27 @@ Provide a helpful response with natural language and relevant timestamps.`;
         hasTimestamps: newTimestamps.length > 0
       };
     } catch (error) {
+      // Handle cancellation specifically
+      if (signal?.aborted || error.message === 'Request was cancelled') {
+        throw new Error('Request was cancelled');
+      }
+      
+      // Handle specific Google AI errors
+      if (error.message.includes('Response was blocked')) {
+        throw new Error('Response blocked by safety filters. Try asking a different question about the video.');
+      }
+      if (error.message.includes('Text not available')) {
+        throw new Error('Unable to process your question about this video. Try rephrasing your question.');
+      }
+      if (error.message.includes('SAFETY')) {
+        throw new Error('Question blocked by safety filters. Try asking a different question.');
+      }
+      
+      // If it's already a custom error message, pass it through
+      if (error.message.includes('blocked by safety filters') || error.message.includes('Try asking') || error.message.includes('Try rephrasing')) {
+        throw error;
+      }
+      
       console.error('Error in chat with video:', error);
       throw new Error('Failed to process your question. Please try again.');
     }

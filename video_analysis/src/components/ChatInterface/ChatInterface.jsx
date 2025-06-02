@@ -9,6 +9,7 @@ import './ChatInterface.css';
  * @param {boolean} loading - Loading state for AI responses
  * @param {function} onSendMessage - Callback when user sends a message
  * @param {function} onTimestampClick - Callback when timestamp is clicked
+ * @param {function} onCancelMessage - Callback to cancel ongoing AI request
  * @param {string} videoId - Current video ID for context
  */
 const ChatInterface = ({ 
@@ -16,6 +17,7 @@ const ChatInterface = ({
   loading, 
   onSendMessage, 
   onTimestampClick,
+  onCancelMessage,
   videoId 
 }) => {
   const [inputMessage, setInputMessage] = useState('');
@@ -112,6 +114,17 @@ const ChatInterface = ({
               <Spinner animation="grow" size="sm" />
               <span className="ms-2">AI is thinking...</span>
             </div>
+            {onCancelMessage && (
+              <Button
+                variant="outline-secondary"
+                size="sm"
+                onClick={onCancelMessage}
+                className="cancel-button"
+                title="Cancel request"
+              >
+                <i className="bi bi-x-circle">Cancel</i>
+              </Button>
+            )}
           </div>
         )}
         

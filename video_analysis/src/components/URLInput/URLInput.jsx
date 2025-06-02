@@ -42,6 +42,9 @@ const URLInput = ({ onVideoLoad, onError }) => {
           placeholder="https://www.youtube.com/watch?v=..."
           className="user-input"
         />
+        <Form.Text className="text-muted">
+          <small>📝 Best results with: educational content, tutorials, lectures, or documentaries</small>
+        </Form.Text>
       </Form.Group>
       <Button variant="primary" type="submit" className="load-button">
         Load Video

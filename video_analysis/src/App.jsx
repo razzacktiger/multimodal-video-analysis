@@ -10,7 +10,7 @@ import './App.css';
 
 export default function App() {
   // State management
-  const [videoId, setVideoId] = useState('xNRJwmlRBNU'); // Default video
+  const [videoId, setVideoId] = useState('bFGXQypBf_I'); // Default video - Ottoman History (educational content)
   const [timestamps, setTimestamps] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -18,6 +18,9 @@ export default function App() {
   // Chat state
   const [chatMessages, setChatMessages] = useState([]);
   const [chatLoading, setChatLoading] = useState(false);
+  
+  // Cancellation state
+  const [abortController, setAbortController] = useState(null);
   
   // Refs
   const videoPlayerRef = useRef(null);
@@ -42,6 +45,13 @@ export default function App() {
   
   // Handle video loading from URL input
   const handleVideoLoad = (newVideoId) => {
+    // Cancel any ongoing chat request when changing videos
+    if (abortController) {
+      abortController.abort();
+      setChatLoading(false);
+      setAbortController(null);
+    }
+    
     setVideoId(newVideoId);
     setTimestamps([]); // Clear previous timestamps
     setChatMessages([]); // Clear chat history
@@ -87,6 +97,15 @@ export default function App() {
       return;
     }
 
+    // Cancel any existing request
+    if (abortController) {
+      abortController.abort();
+    }
+
+    // Create new AbortController for this request
+    const newAbortController = new AbortController();
+    setAbortController(newAbortController);
+
     // Add user message to chat
     const userMessage = {
       id: Date.now(),
@@ -99,13 +118,19 @@ export default function App() {
     setChatLoading(true);
 
     try {
-      // Get AI response
+      // Get AI response with cancellation support
       const response = await aiService.chatWithVideo(
         message, 
         videoId, 
         chatMessages, 
-        timestamps
+        timestamps,
+        newAbortController.signal
       );
+      
+      // Check if request was cancelled
+      if (newAbortController.signal.aborted) {
+        return;
+      }
       
       // Add AI response to chat
       const aiMessage = {
@@ -117,6 +142,12 @@ export default function App() {
       
       setChatMessages(prev => [...prev, aiMessage]);
     } catch (err) {
+      // Don't show error message if request was cancelled
+      if (err.message === 'Request was cancelled') {
+        console.log('Chat request was cancelled by user');
+        return;
+      }
+      
       // Add error message to chat
       const errorMessage = {
         id: Date.now() + 1,
@@ -127,6 +158,17 @@ export default function App() {
       setChatMessages(prev => [...prev, errorMessage]);
     } finally {
       setChatLoading(false);
+      setAbortController(null);
+    }
+  };
+  
+  // Handle chat message cancellation
+  const handleCancelMessage = () => {
+    if (abortController) {
+      console.log('App.jsx: Cancelling chat request');
+      abortController.abort();
+      setChatLoading(false);
+      setAbortController(null);
     }
   };
   
@@ -134,6 +176,15 @@ export default function App() {
   const handleError = (errorMessage) => {
     setError(errorMessage);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (abortController) {
+        abortController.abort();
+      }
+    };
+  }, [abortController]);
 
   return (
     <div className="app-container">
@@ -193,6 +244,7 @@ export default function App() {
                   onSendMessage={handleSendMessage}
                   onTimestampClick={handleTimestampClick}
                   videoId={videoId}
+                  onCancelMessage={handleCancelMessage}
                 />
               </div>
             </Col>
