@@ -43,9 +43,21 @@ const ChatMessage = ({ message, onTimestampClick }) => {
     return text
       // Remove malformed bold markers like "** **"
       .replace(/\*\*\s*\*\*/g, '')
+      // Fix trailing asterisks after timestamps like "0:00**" -> "0:00"
+      .replace(/(\d{1,2}:\d{2}(?::\d{2})?)\*\*/g, '$1')
+      // Fix trailing asterisks after numbers like "1:00**" -> "1:00" 
+      .replace(/(\d+)\*\*/g, '$1')
+      // Fix trailing asterisks after text/colons like "Text**:" -> "Text:"
+      .replace(/\*\*([:\.,;!?])/g, '$1')
+      // Fix leading asterisks before text like "**Text" -> "Text" (only if not proper bold)
+      .replace(/\*\*([^*\s][^*]*?)(?!\*\*)/g, '$1')
+      // Remove orphaned double asterisks at end of lines
+      .replace(/\*\*$/gm, '')
+      // Remove orphaned double asterisks at start of lines  
+      .replace(/^\*\*/gm, '')
       // Fix bullet points that got mangled
       .replace(/\*\s+\*\*/g, '* ')
-      // Clean up extra asterisks
+      // Clean up extra asterisks (3 or more)
       .replace(/\*{3,}/g, '**')
       // Remove empty bullet points
       .replace(/^\*\s*$/gm, '')

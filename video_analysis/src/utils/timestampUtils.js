@@ -34,7 +34,7 @@ export const parseTimestampLine = (timestampLine) => {
   return {
     time: timeStr,
     description: description.trim(),
-    seconds: parseTimestamp(timestampLine)
+    seconds: parseTimestamp(timeStr)
   };
 };
 
@@ -58,8 +58,9 @@ export const formatTimestamp = (seconds) => {
 /**
  * Filter and validate timestamp lines from AI response
  * @param {string} text - Raw AI response text
- * @returns {array} - Array of valid timestamp lines
+ * @returns {array} - Array of parsed timestamp objects
  */
 export const extractTimestampLines = (text) => {
-  return text.split('\n').filter(line => line.match(/\d+:\d+(?::\d+)?\s*-/));
+  const rawLines = text.split('\n').filter(line => line.match(/\d+:\d+(?::\d+)?\s*-/));
+  return rawLines.map(line => parseTimestampLine(line));
 }; 
