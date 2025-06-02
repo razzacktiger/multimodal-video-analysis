@@ -164,6 +164,11 @@
   margin-top: 0.25rem;
 }
 
+.processing-time {
+  color: #28a745;
+  font-weight: 500;
+}
+
 /* Remove default margins from markdown elements */
 .message-content p {
   margin: 0;

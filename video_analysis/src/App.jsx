@@ -14,6 +14,7 @@ export default function App() {
   const [timestamps, setTimestamps] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [timestampProcessingTime, setTimestampProcessingTime] = useState(null);
   
   // Chat state
   const [chatMessages, setChatMessages] = useState([]);
@@ -68,10 +69,28 @@ export default function App() {
     setLoading(true);
     setError('');
     
+    // Track timing for timestamp generation
+    const startTime = Date.now();
+    
     try {
       const generatedTimestamps = await aiService.generateTimestamps(videoId);
+      
+      // Calculate processing time
+      const endTime = Date.now();
+      const processingTime = (endTime - startTime) / 1000;
+      
       setTimestamps(generatedTimestamps);
+      setTimestampProcessingTime(processingTime);
+      
+      // Show success message with timing
+      console.log(`Timestamps generated in ${processingTime.toFixed(1)} seconds`);
+      
     } catch (err) {
+      const endTime = Date.now();
+      const processingTime = (endTime - startTime) / 1000;
+      
+      console.log(`Timestamp generation failed after ${processingTime.toFixed(1)} seconds`);
+      setTimestampProcessingTime(null);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -106,6 +125,9 @@ export default function App() {
     const newAbortController = new AbortController();
     setAbortController(newAbortController);
 
+    // Track timing
+    const startTime = Date.now();
+
     // Add user message to chat
     const userMessage = {
       id: Date.now(),
@@ -132,12 +154,17 @@ export default function App() {
         return;
       }
       
-      // Add AI response to chat
+      // Calculate processing time
+      const endTime = Date.now();
+      const processingTime = (endTime - startTime) / 1000; // Convert to seconds
+      
+      // Add AI response to chat with timing
       const aiMessage = {
         id: Date.now() + 1,
         type: 'ai',
         content: response.content,
-        timestamps: response.timestamps || []
+        timestamps: response.timestamps || [],
+        processingTime: processingTime
       };
       
       setChatMessages(prev => [...prev, aiMessage]);
@@ -148,12 +175,17 @@ export default function App() {
         return;
       }
       
-      // Add error message to chat
+      // Calculate processing time for error case too
+      const endTime = Date.now();
+      const processingTime = (endTime - startTime) / 1000;
+      
+      // Add error message to chat with timing
       const errorMessage = {
         id: Date.now() + 1,
         type: 'ai',
         content: `Sorry, I encountered an error: ${err.message}`,
-        timestamps: []
+        timestamps: [],
+        processingTime: processingTime
       };
       setChatMessages(prev => [...prev, errorMessage]);
     } finally {
@@ -231,6 +263,7 @@ export default function App() {
                   error={error}
                   onGenerateTimestamps={handleGenerateTimestamps}
                   onTimestampClick={handleTimestampClick}
+                  processingTime={timestampProcessingTime}
                 />
               </div>
             </Col>

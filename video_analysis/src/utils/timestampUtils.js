@@ -27,15 +27,27 @@ export const parseTimestamp = (timestampStr) => {
  * @returns {object} - Object with time and description
  */
 export const parseTimestampLine = (timestampLine) => {
-  const timeMatch = timestampLine.match(/(\d+:\d+(?::\d+)?)/);
+  // Validate input
+  if (typeof timestampLine !== 'string') {
+    console.error('parseTimestampLine: Input is not a string:', timestampLine);
+    return {
+      time: 'N/A',
+      description: 'Invalid timestamp format',
+      seconds: 0
+    };
+  }
+  
+  const timeMatch = timestampLine.match(/(\d{1,2}:\d{2}(?::\d{2})?)/);
   const timeStr = timeMatch ? timeMatch[1] : '';
   const description = timestampLine.replace(/\d+:\d+(?::\d+)?\s*-\s*/, '');
   
-  return {
-    time: timeStr,
-    description: description.trim(),
-    seconds: parseTimestamp(timeStr)
+  const result = {
+    time: timeStr || 'N/A',
+    description: description.trim() || timestampLine.trim(),
+    seconds: timeStr ? parseTimestamp(timeStr) : 0
   };
+  
+  return result;
 };
 
 /**
@@ -61,6 +73,17 @@ export const formatTimestamp = (seconds) => {
  * @returns {array} - Array of parsed timestamp objects
  */
 export const extractTimestampLines = (text) => {
+  console.log('extractTimestampLines: Input text:', text.substring(0, 200) + '...');
+  
   const rawLines = text.split('\n').filter(line => line.match(/\d+:\d+(?::\d+)?\s*-/));
-  return rawLines.map(line => parseTimestampLine(line));
+  console.log('extractTimestampLines: Found raw lines:', rawLines);
+  
+  const parsedTimestamps = rawLines.map(line => {
+    const parsed = parseTimestampLine(line);
+    console.log(`extractTimestampLines: Parsed "${line}" ->`, parsed);
+    return parsed;
+  });
+  
+  console.log('extractTimestampLines: Final parsed timestamps:', parsedTimestamps);
+  return parsedTimestamps;
 }; 

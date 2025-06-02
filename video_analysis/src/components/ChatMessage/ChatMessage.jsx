@@ -212,6 +212,9 @@ const ChatMessage = ({ message, onTimestampClick }) => {
       
       <div className="message-time">
         {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+        {message.processingTime && message.type === 'ai' && (
+          <span className="processing-time"> · {message.processingTime.toFixed(1)}s</span>
+        )}
       </div>
     </div>
   );
