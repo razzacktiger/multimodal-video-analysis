@@ -232,7 +232,7 @@ export default function App() {
           
           {/* URL Input Section */}
           <Row className="justify-content-center mt-4">
-            <Col md={8} lg={6} className="d-flex justify-content-center">
+            <Col xs={12} sm={10} md={8} lg={10} xl={8} className="d-flex justify-content-center">
               <URLInput 
                 onVideoLoad={handleVideoLoad}
                 onError={handleError}
@@ -245,9 +245,9 @@ export default function App() {
       {/* Main Content Area */}
       <main className="app-main">
         <Container fluid className="h-100">
-          <Row className="h-100">
+          <Row className="h-100 g-3">
             {/* Video and Timestamps Section */}
-            <Col lg={6} className="video-section">
+            <Col xs={12} md={6} lg={6} xl={6} className="video-section">
               <div className="video-container">
                 <VideoPlayer 
                   ref={videoPlayerRef}
@@ -268,8 +268,8 @@ export default function App() {
               </div>
             </Col>
             
-            {/* Chat Interface Section - Now larger! */}
-            <Col lg={6} className="chat-section">
+            {/* Chat Interface Section */}
+            <Col xs={12} md={6} lg={6} xl={6} className="chat-section">
               <div className="chat-container">
                 <ChatInterface
                   messages={chatMessages}

@@ -3,4 +3,18 @@
   flex-direction: column;
   align-items: center;
   width: 100%;
+  max-width: none;
+}
+
+.url-input-form .form-group {
+  width: 100%;
+  max-width: 600px;
+}
+
+.url-input-form .form-control {
+  width: 100%;
+}
+
+.url-input-form .load-button {
+  margin-top: 1rem;
 } 

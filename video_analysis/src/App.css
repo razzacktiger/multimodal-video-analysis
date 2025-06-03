@@ -33,6 +33,19 @@
   flex: 1;
   padding: 2rem 0;
   min-height: 0; /* Important for flex children */
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main .container-fluid {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-main .row {
+  flex: 1;
+  margin: 0;
 }
 
 /* Video Section */
@@ -41,6 +54,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  min-height: 500px; /* Minimum height for mobile */
 }
 
 .video-container {
@@ -49,6 +63,7 @@
   padding: 1rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid #e9ecef;
+  flex: 0 0 auto; /* Don't grow, maintain aspect ratio */
 }
 
 .timestamps-container {
@@ -57,8 +72,9 @@
   padding: 1.5rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid #e9ecef;
-  max-height: 400px;
+  flex: 1; /* Take remaining space */
   overflow-y: auto;
+  min-height: 200px; /* Minimum usable height */
 }
 
 /* Chat Section */
@@ -66,6 +82,7 @@
   padding: 0 1rem;
   display: flex;
   flex-direction: column;
+  min-height: 500px; /* Minimum height for mobile */
 }
 
 .chat-container {
@@ -73,10 +90,10 @@
   border-radius: 0.75rem;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid #e9ecef;
-  height: calc(100vh - 300px); /* Responsive height */
-  min-height: 600px;
+  flex: 1; /* Take available space */
   display: flex;
   flex-direction: column;
+  min-height: 500px; /* Minimum for functionality */
 }
 
 /* Timestamp Styles */
@@ -183,15 +200,15 @@
   
   .video-section, .chat-section {
     margin-bottom: 2rem;
+    min-height: 400px; /* Smaller minimum on tablets */
   }
   
   .chat-container {
-    height: 500px;
-    min-height: 500px;
+    min-height: 400px;
   }
   
   .timestamps-container {
-    max-height: 300px;
+    min-height: 150px;
   }
 }
 
@@ -214,11 +231,16 @@
   
   .video-section, .chat-section {
     padding: 0 0.5rem;
+    margin-bottom: 1.5rem;
+    min-height: 350px; /* Even smaller on mobile */
   }
   
   .chat-container {
-    height: 400px;
-    min-height: 400px;
+    min-height: 350px;
+  }
+  
+  .timestamps-container {
+    min-height: 120px;
   }
 }
 

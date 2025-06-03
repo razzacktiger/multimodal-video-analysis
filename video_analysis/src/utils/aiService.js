@@ -35,7 +35,25 @@ class AIService {
       if (result.response.promptFeedback?.blockReason) {
         const blockReason = result.response.promptFeedback.blockReason;
         console.error('AIService: Response blocked due to:', blockReason);
-        throw new Error(`Content was blocked by safety filters: ${blockReason}. Try with a different video.`);
+        
+        let errorMessage = `Content was blocked by safety filters (${blockReason}).`;
+        
+        // Provide specific guidance based on block reason
+        switch(blockReason) {
+          case 'OTHER':
+            errorMessage += ' This video may contain content that doesn\'t meet AI safety guidelines. Try educational videos like tutorials, documentaries, or lectures.';
+            break;
+          case 'SAFETY':
+            errorMessage += ' This video contains content flagged for safety concerns. Please try a different video.';
+            break;
+          case 'DEROGATORY':
+            errorMessage += ' This video contains language or content that may be offensive. Please try a different video.';
+            break;
+          default:
+            errorMessage += ' Try with a different video - educational content works best.';
+        }
+        
+        throw new Error(errorMessage);
       }
       
       // Check if response has candidates
@@ -105,30 +123,30 @@ class AIService {
         : '';
 
       const prompt = `You are a helpful video analysis assistant. Analyze the video content and provide a clear, well-formatted response.
+      IMPORTANT FORMATTING RULES:
+        - Write naturally with clear paragraphs
+        - When referencing specific moments, use exact timestamps like "At 2:34" or "Around 1:23:45"
+        - Use **bold text** for important points
+        - Use bullet points with standard format: "* Point one" or "- Point one"
+        - Write conversationally - timestamps will automatically become clickable
+        - Do NOT use any special link formatting - just write timestamps normally in text
 
-IMPORTANT FORMATTING RULES:
-- Write naturally with clear paragraphs
-- When referencing specific moments, use exact timestamps like "At 2:34" or "Around 1:23:45"
-- Use **bold text** for important points
-- Use bullet points with standard format: "* Point one" or "- Point one"
-- Write conversationally - timestamps will automatically become clickable
-- Do NOT use any special link formatting - just write timestamps normally in text
+        RESPONSE GUIDELINES:
+        1. Be helpful and conversational
+        2. Include specific timestamps when relevant (MM:SS or HH:MM:SS format)  
+        3. Describe visual elements clearly when asked
+        4. Provide structured information when helpful
+        5. Reference specific moments with natural language like "At 2:34, you can see..." or "The key point at 1:23 shows..."
+        6. Be concise and to the point. Do not overwhelm the user with too much information unless they ask for it. 
 
-RESPONSE GUIDELINES:
-1. Be helpful and conversational
-2. Include specific timestamps when relevant (MM:SS or HH:MM:SS format)  
-3. Describe visual elements clearly when asked
-4. Provide structured information when helpful
-5. Reference specific moments with natural language like "At 2:34, you can see..." or "The key point at 1:23 shows..."
+        Previous conversation:
+        ${conversationHistory}
 
-Previous conversation:
-${conversationHistory}
+        ${timestampContext}
 
-${timestampContext}
+        User question: ${message}
 
-User question: ${message}
-
-Provide a helpful response with natural language and relevant timestamps.`;
+        Provide a helpful response with natural language and relevant timestamps.`;
 
       // Check for cancellation before making the request
       if (signal?.aborted) {
@@ -153,7 +171,25 @@ Provide a helpful response with natural language and relevant timestamps.`;
       if (result.response.promptFeedback?.blockReason) {
         const blockReason = result.response.promptFeedback.blockReason;
         console.error('AIService: Chat response blocked due to:', blockReason);
-        throw new Error(`Response was blocked by safety filters: ${blockReason}. Try asking a different question.`);
+        
+        let errorMessage = `Response was blocked by safety filters (${blockReason}).`;
+        
+        // Provide specific guidance based on block reason  
+        switch(blockReason) {
+          case 'OTHER':
+            errorMessage += ' This video may contain content that doesn\'t meet AI safety guidelines. Try asking about educational videos like tutorials, documentaries, or lectures.';
+            break;
+          case 'SAFETY':
+            errorMessage += ' This video contains content flagged for safety concerns. Please try a different video.';
+            break;
+          case 'DEROGATORY':
+            errorMessage += ' This video contains language or content that may be offensive. Please try a different video.';
+            break;
+          default:
+            errorMessage += ' Try asking about a different video - educational content works best.';
+        }
+        
+        throw new Error(errorMessage);
       }
       
       // Check if response has candidates
