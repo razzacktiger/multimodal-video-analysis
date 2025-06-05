@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Button, Spinner } from 'react-bootstrap';
 import TimestampItem from './TimestampItem';
 import './TimestampList.css';
 
 /**
- * TimestampList Component - Displays and manages video timestamps
+ * TimestampList Component - Modern timestamp display with card design
  * @param {array} timestamps - Array of timestamp objects (already parsed)
  * @param {boolean} loading - Loading state for timestamp generation
  * @param {string} error - Error message
@@ -26,13 +25,11 @@ const TimestampList = ({
   // Timer for elapsed time during loading
   useEffect(() => {
     if (loading) {
-      // Reset and start timer
       setElapsedTime(0);
       timerRef.current = setInterval(() => {
         setElapsedTime(prev => prev + 0.1);
       }, 100);
     } else {
-      // Stop timer when not loading
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -40,7 +37,6 @@ const TimestampList = ({
       setElapsedTime(0);
     }
 
-    // Cleanup on unmount
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
@@ -50,55 +46,71 @@ const TimestampList = ({
 
   return (
     <div className="timestamp-list-container">
-      <h3 className="subtitle-timestamps">Video Timestamps</h3>
-      
-      <Button
-        variant="success"
-        onClick={onGenerateTimestamps}
-        disabled={loading}
-        className="generate-button"
-      >
-        {loading ? (
-          <>
-            <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" />
-            <span className="ms-2">Generating... ({elapsedTime.toFixed(1)}s)</span>
-          </>
-        ) : "Generate Timestamps"}
-      </Button>
+      <div className="timestamp-list-card">
+        <div className="timestamp-list-header">
+          <h4 className="timestamp-list-title">⏰ Smart Timestamps</h4>
+        </div>
+        
+        <div className="timestamp-list-body">
+          <button
+            onClick={onGenerateTimestamps}
+            disabled={loading}
+            className={`timestamp-generate-button ${loading ? 'timestamp-generate-button-loading' : ''}`}
+          >
+            {loading ? (
+              <div className="timestamp-generate-loading">
+                <div className="timestamp-generate-spinner"></div>
+                <span>Generating... ({elapsedTime.toFixed(1)}s)</span>
+              </div>
+            ) : (
+              <div className="timestamp-generate-content">
+                <span className="timestamp-generate-emoji">✨</span>
+                Generate Timestamps
+              </div>
+            )}
+          </button>
 
-      {error && <div className="alert alert-danger mt-3">{error}</div>}
-
-      {timestamps.length > 0 ? (
-        <div className="timestamps-container bg-light p-3 rounded text-start mt-3">
-          {processingTime && (
-            <div className="processing-info mb-2">
-              <small className="text-success">✓ Generated in {processingTime.toFixed(1)}s</small>
+          {error && (
+            <div className="timestamp-error">
+              ❌ {error}
             </div>
           )}
-          <ul className="list-unstyled">
-            {timestamps.map((timestamp, index) => {
-              // Handle both parsed objects and raw strings for backwards compatibility
-              const timestampData = typeof timestamp === 'string' 
-                ? { time: 'N/A', description: timestamp, seconds: 0 }
-                : timestamp;
-              
-              return (
-                <TimestampItem
-                  key={index}
-                  time={timestampData.time}
-                  description={timestampData.description}
-                  seconds={timestampData.seconds}
-                  onClick={() => onTimestampClick(timestampData.seconds)}
-                />
-              );
-            })}
-          </ul>
+
+          {timestamps.length > 0 ? (
+            <div className="timestamp-content">
+              {processingTime && (
+                <div className="timestamp-success">
+                  ✓ Generated in {processingTime.toFixed(1)}s
+                </div>
+              )}
+              <div className="timestamp-items">
+                {timestamps.map((timestamp, index) => {
+                  const timestampData = typeof timestamp === 'string' 
+                    ? { time: 'N/A', description: timestamp, seconds: 0 }
+                    : timestamp;
+                  
+                  return (
+                    <TimestampItem
+                      key={index}
+                      time={timestampData.time}
+                      description={timestampData.description}
+                      seconds={timestampData.seconds}
+                      onClick={() => onTimestampClick(timestampData.seconds)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ) : !loading && !error ? (
+            <div className="timestamp-empty">
+              <div className="timestamp-empty-icon">🎬</div>
+              <p className="timestamp-empty-text">
+                No timestamps generated yet. Click the button to generate.
+              </p>
+            </div>
+          ) : null}
         </div>
-      ) : !loading && !error ? (
-        <div className="alert-info mt-3">
-          No timestamps generated yet. Click the button to generate.
-        </div>
-      ) : null}
+      </div>
     </div>
   );
 };

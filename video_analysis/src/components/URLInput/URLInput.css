@@ -1,20 +1,182 @@
-.url-input-form {
+/* URLInput Component Styles */
+
+.url-input-container {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   align-items: center;
   width: 100%;
-  max-width: none;
+  min-height: 400px;
+  padding: 2rem;
 }
 
-.url-input-form .form-group {
+.url-input-card {
   width: 100%;
-  max-width: 600px;
+  max-width: 600px; /* Increased from 32rem for better visibility */
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(40px);
+  border-radius: 1.5rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-.url-input-form .form-control {
+.url-input-card:hover {
+  box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.url-input-header {
+  background: linear-gradient(to right, rgb(168, 85, 247), rgb(236, 72, 153));
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.url-input-title {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin: 0;
+}
+
+.url-input-body {
+  padding: 2rem;
+}
+
+.url-input-field {
+  margin-bottom: 1.5rem;
+}
+
+.url-input {
   width: 100%;
+  padding: 1rem;
+  font-size: 1.125rem;
+  border: 2px solid rgba(229, 231, 235, 0.8);
+  border-radius: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  background: rgba(249, 250, 251, 0.8);
+  color: rgb(31, 41, 55); /* Explicit text color for visibility */
 }
 
-.url-input-form .load-button {
-  margin-top: 1rem;
+.url-input::placeholder {
+  color: rgb(156, 163, 175); /* Explicit placeholder color */
+}
+
+.url-input:focus {
+  background: white;
+  border-color: rgb(168, 85, 247);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.1);
+  color: rgb(31, 41, 55); /* Ensure text stays visible on focus */
+}
+
+.url-input-error {
+  border-color: rgb(239, 68, 68);
+}
+
+.url-input-error-message {
+  color: rgb(239, 68, 68);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  font-weight: 500;
+}
+
+.url-input-help-text {
+  color: rgb(107, 114, 128);
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  text-align: center;
+  font-style: italic;
+}
+
+.url-submit-button {
+  width: 100%;
+  padding: 1rem;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: white;
+  border-radius: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: linear-gradient(to right, rgb(168, 85, 247), rgb(236, 72, 153));
+}
+
+.url-submit-button:hover:not(:disabled) {
+  background: linear-gradient(to right, rgb(147, 51, 234), rgb(219, 39, 119));
+  transform: scale(1.02);
+  box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
+}
+
+.url-submit-button-disabled {
+  background: rgb(156, 163, 175);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.url-submit-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.url-submit-spinner {
+  width: 1.5rem;
+  height: 1.5rem;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.url-submit-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.url-submit-emoji {
+  font-size: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .url-input-container {
+    padding: 1rem;
+    min-height: 300px;
+  }
+  
+  .url-input-card {
+    max-width: 100%;
+  }
+  
+  .url-input-header {
+    padding: 1rem;
+  }
+  
+  .url-input-title {
+    font-size: 1.25rem;
+  }
+  
+  .url-input-body {
+    padding: 1.5rem;
+  }
+  
+  .url-input {
+    font-size: 1rem;
+    padding: 0.875rem;
+  }
+  
+  .url-submit-button {
+    font-size: 1.125rem;
+    padding: 0.875rem;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 } 

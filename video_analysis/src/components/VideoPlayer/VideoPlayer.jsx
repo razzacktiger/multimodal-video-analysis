@@ -3,7 +3,7 @@ import { createEmbedUrl, createEmbedUrlWithTimestamp } from '../../utils/videoUt
 import './VideoPlayer.css';
 
 /**
- * VideoPlayer Component - Handles YouTube video embedding and playback control
+ * VideoPlayer Component - Modern YouTube video player with card design
  * @param {string} videoId - YouTube video ID
  * @param {object} ref - Forwarded ref for external control
  */
@@ -32,14 +32,22 @@ const VideoPlayer = forwardRef(({ videoId }, ref) => {
   
   return (
     <div className="video-player-container">
-      <div className="ratio ratio-16x9">
-        <iframe
-          ref={iframeRef}
-          src={videoUrl}
-          title="YouTube video"
-          allowFullScreen
-          className="embed-responsive-item"
-        />
+      <div className="video-player-card">
+        <div className="video-player-header">
+          <h4 className="video-player-title">🎥 Video Player</h4>
+        </div>
+        <div className="video-player-body">
+          <div className="video-embed-container">
+            <iframe
+              ref={iframeRef}
+              src={videoUrl}
+              title="YouTube video"
+              allowFullScreen
+              className="video-embed"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * TimestampItem Component - Individual clickable timestamp entry
+ * TimestampItem Component - Modern clickable timestamp entry with card design
  * @param {string} time - Formatted time string (e.g., "2:34")
  * @param {string} description - Description of the timestamp
  * @param {number} seconds - Time in seconds
@@ -9,16 +9,18 @@ import React from 'react';
  */
 const TimestampItem = ({ time, description, seconds, onClick }) => {
   return (
-    <li className="mb-2">
+    <div className="timestamp-item">
       <button
-        className="timestamp-button"
+        className="timestamp-time-button"
         onClick={onClick}
         title={`Jump to ${time}`}
       >
         {time}
       </button>
-      <span className="timestamp-description"> - {description}</span>
-    </li>
+      <div className="timestamp-description">
+        {description}
+      </div>
+    </div>
   );
 };
 

@@ -1,62 +1,288 @@
-/* App Container - Full viewport layout */
+/* Main App Styles */
+
 .app-container {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f8f9fa;
+  background: linear-gradient(
+    135deg,
+    rgb(249, 250, 251) 0%,
+    rgb(219, 234, 254) 100%
+  );
+  width: 100vw;
+  overflow-x: hidden;
 }
 
-/* Header Section */
 .app-header {
-  padding: 2rem 0 1.5rem 0;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(
+    135deg,
+    rgb(168, 85, 247) 0%,
+    rgb(236, 72, 153) 50%,
+    rgb(59, 130, 246) 100%
+  );
+  padding: 2rem 0;
+  text-align: center;
   color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.app-header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
 }
 
 .app-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  font-size: 3.5rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .app-subtitle {
-  font-size: 1.1rem;
-  opacity: 0.9;
-  margin-bottom: 0;
+  font-size: 1.25rem;
   font-weight: 300;
+  opacity: 0.9;
+  margin-bottom: 1.5rem;
 }
 
-/* Main Content Area */
+.app-reset-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.app-reset-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
 .app-main {
-  flex: 1;
+  padding: 2rem;
+  width: 100%;
+  min-height: calc(100vh - 200px);
+  overflow-y: auto; /* Allow main container to scroll */
+}
+
+/* Landing Page Container */
+.app-landing-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 300px);
   padding: 2rem 0;
-  min-height: 0; /* Important for flex children */
-  display: flex;
-  flex-direction: column;
+  width: 100%;
 }
 
-.app-main .container-fluid {
-  flex: 1;
+/* Processing State Container */
+.app-processing-container {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: calc(100vh - 300px);
+  padding: 2rem 0;
+  width: 100%;
 }
 
-.app-main .row {
-  flex: 1;
+/* Ensure Bootstrap columns take proper space */
+.row {
   margin: 0;
+  width: 100%;
 }
 
-/* Video Section */
+.col-lg-6 {
+  padding: 0 0.75rem;
+  max-width: 50%;
+}
+
+/* Fix container spacing */
+.container-fluid {
+  padding: 0;
+  max-width: none !important;
+  width: 100% !important;
+}
+
+/* Ensure full height for components */
+.g-4 > .col-lg-6 {
+  display: flex;
+  flex-direction: column;
+}
+
+.g-4 > .col-lg-6 > div {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .app-title {
+    font-size: 2.5rem;
+  }
+
+  .app-subtitle {
+    font-size: 1rem;
+  }
+
+  .app-main {
+    padding: 1rem;
+  }
+
+  .app-header {
+    padding: 1.5rem 0;
+  }
+
+  .app-landing-container {
+    min-height: calc(100vh - 250px);
+    padding: 1rem 0;
+  }
+
+  .app-processing-container {
+    min-height: calc(100vh - 250px);
+    padding: 1rem 0;
+  }
+
+  .video-analysis-layout {
+    height: auto; /* Allow natural height on mobile */
+    max-height: none;
+    flex-direction: column;
+  }
+
+  .video-analysis-column {
+    height: auto;
+    max-height: none;
+    margin-bottom: 2rem;
+  }
+
+  .video-section {
+    height: auto;
+    max-height: none;
+    min-height: 400px;
+  }
+
+  .timestamps-section {
+    max-height: 400px; /* Fixed height for mobile timestamps */
+    min-height: 300px;
+  }
+
+  .chat-section {
+    height: 500px; /* Fixed height for mobile chat */
+    max-height: 500px;
+  }
+
+  .container-fluid {
+    padding: 0 !important;
+  }
+
+  .col-lg-6 {
+    padding: 0 0.5rem;
+    margin-bottom: 1rem;
+    max-width: 100%;
+  }
+
+  .row {
+    width: 100%;
+    margin: 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .app-title {
+    font-size: 2rem;
+  }
+
+  .app-header-content {
+    padding: 0 1rem;
+  }
+}
+
+/* Bootstrap Grid Spacing */
+.g-4 > * {
+  margin-bottom: 1.5rem;
+}
+
+/* Smooth Animations */
+* {
+  transition: all 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, rgb(168, 85, 247), rgb(236, 72, 153));
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, rgb(147, 51, 234), rgb(219, 39, 119));
+}
+
+/* Video Analysis Layout Heights - Cohesive Solution */
+.video-analysis-layout {
+  min-height: calc(100vh - 150px); /* Use min-height instead of fixed height */
+  overflow: visible; /* Allow content to be visible and scrollable */
+}
+
+.video-analysis-column {
+  height: 100%; /* Fill parent container */
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Critical for flex child overflow */
+}
+
 .video-section {
-  padding: 0 1rem;
+  height: 100%; /* Fill left column completely */
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-  min-height: 500px; /* Minimum height for mobile */
+  min-height: 0; /* Critical for flex child overflow */
 }
 
+.video-player-section {
+  flex-shrink: 0; /* Don't shrink the video */
+  max-height: 700px; /* Enforce maximum height - 2.5x larger */
+  overflow: hidden;
+}
+
+.timestamps-section {
+  flex: 1; /* Take remaining space after video */
+  min-height: 0; /* Critical: allow shrinking below content size */
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-section {
+  height: 100%; /* Fill right column completely */
+  max-height: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 0; /* Critical for flex child overflow */
+}
+
+.chat-container-wrapper {
+  flex: 1;
+  height: 100%;
+  max-height: 100%;
+  overflow: hidden;
+}
+
+/* Video Section */
 .video-container {
   background: white;
   border-radius: 0.75rem;
@@ -73,18 +299,13 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   border: 1px solid #e9ecef;
   flex: 1; /* Take remaining space */
-  overflow-y: auto;
-  min-height: 200px; /* Minimum usable height */
+  overflow: hidden; /* Let inner list handle scrolling */
+  min-height: 200px; /* Ensure minimum usable space */
+  display: flex;
+  flex-direction: column;
 }
 
 /* Chat Section */
-.chat-section {
-  padding: 0 1rem;
-  display: flex;
-  flex-direction: column;
-  min-height: 500px; /* Minimum height for mobile */
-}
-
 .chat-container {
   background: white;
   border-radius: 0.75rem;
@@ -106,8 +327,9 @@
 .list-unstyled {
   margin: 0;
   padding: 0;
-  max-height: 300px;
-  overflow-y: auto;
+  flex: 1; /* Take all available space in timestamps container */
+  overflow-y: auto; /* Handle scrolling for timestamp items */
+  min-height: 0; /* Allow shrinking */
 }
 
 .list-unstyled li {
@@ -159,7 +381,8 @@
 }
 
 /* Generate button styling */
-.generate-button, .btn-success {
+.generate-button,
+.btn-success {
   background: linear-gradient(135deg, #28a745, #1e7e34);
   border: none;
   border-radius: 0.5rem;
@@ -169,7 +392,8 @@
   transition: all 0.2s ease;
 }
 
-.generate-button:hover, .btn-success:hover {
+.generate-button:hover,
+.btn-success:hover {
   background: linear-gradient(135deg, #1e7e34, #155724);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
@@ -192,74 +416,45 @@
   color: #721c24;
 }
 
-/* Responsive Design */
-@media (max-width: 991.98px) {
-  .app-title {
-    font-size: 2rem;
-  }
-  
-  .video-section, .chat-section {
-    margin-bottom: 2rem;
-    min-height: 400px; /* Smaller minimum on tablets */
-  }
-  
-  .chat-container {
-    min-height: 400px;
-  }
-  
-  .timestamps-container {
-    min-height: 150px;
-  }
-}
-
-@media (max-width: 767.98px) {
-  .app-header {
-    padding: 1.5rem 0 1rem 0;
-  }
-  
-  .app-title {
-    font-size: 1.75rem;
-  }
-  
-  .app-subtitle {
-    font-size: 1rem;
-  }
-  
-  .app-main {
-    padding: 1rem 0;
-  }
-  
-  .video-section, .chat-section {
-    padding: 0 0.5rem;
-    margin-bottom: 1.5rem;
-    min-height: 350px; /* Even smaller on mobile */
-  }
-  
-  .chat-container {
-    min-height: 350px;
-  }
-  
-  .timestamps-container {
-    min-height: 120px;
-  }
-}
-
 /* Scrollbar styling for timestamps */
-.timestamps-container::-webkit-scrollbar {
+.timestamps-container::-webkit-scrollbar,
+.timestamp-items::-webkit-scrollbar {
   width: 8px;
 }
 
-.timestamps-container::-webkit-scrollbar-track {
+.timestamps-container::-webkit-scrollbar-track,
+.timestamp-items::-webkit-scrollbar-track {
   background: #f1f1f1;
   border-radius: 4px;
 }
 
-.timestamps-container::-webkit-scrollbar-thumb {
+.timestamps-container::-webkit-scrollbar-thumb,
+.timestamp-items::-webkit-scrollbar-thumb {
   background: linear-gradient(135deg, #007bff, #0056b3);
   border-radius: 4px;
 }
 
-.timestamps-container::-webkit-scrollbar-thumb:hover {
+.timestamps-container::-webkit-scrollbar-thumb:hover,
+.timestamp-items::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #0056b3, #004085);
+}
+
+/* Scrollbar styling for chat messages */
+.chat-messages-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-radius: 4px;
+}
+
+.chat-messages-container::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #0056b3, #004085);
 }
 

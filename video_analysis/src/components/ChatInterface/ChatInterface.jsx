@@ -1,10 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Form, Button, Spinner } from 'react-bootstrap';
 import ChatMessage from '../ChatMessage/ChatMessage';
+import ChatInput from './ChatInput';
 import './ChatInterface.css';
 
 /**
- * ChatInterface Component - Main chat interface with message history and input
+ * ChatInterface Component - Modern chat interface with card design
  * @param {array} messages - Array of chat messages
  * @param {boolean} loading - Loading state for AI responses
  * @param {function} onSendMessage - Callback when user sends a message
@@ -22,38 +22,19 @@ const ChatInterface = ({
 }) => {
   const [inputMessage, setInputMessage] = useState('');
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
+  const messagesContainerRef = useRef(null);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
-
-  // Focus input when component mounts
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const message = inputMessage.trim();
-    
-    if (!message) return;
-    
-    if (!videoId) {
-      // Could add a toast notification here
-      return;
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTop = messagesContainerRef.current.scrollHeight;
     }
+  }, [messages, loading]);
 
+  const handleSendMessage = (message) => {
+    if (!message.trim() || !videoId) return;
     onSendMessage(message);
     setInputMessage('');
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
   };
 
   // Suggested questions for users
@@ -65,98 +46,82 @@ const ChatInterface = ({
   ];
 
   return (
-    <div className="chat-interface">
-      <div className="chat-header">
-        <h4 className="chat-title">Video Chat Assistant</h4>
-        <p className="chat-subtitle">Ask questions about the video content</p>
-      </div>
-
-      <div className="chat-messages">
-        {messages.length === 0 ? (
-          <div className="chat-welcome">
-            <div className="welcome-message">
-              <h5>👋 Welcome to Video Chat!</h5>
-              <p>Ask me anything about the video. I can help you:</p>
-              <ul>
-                <li>Find specific topics or moments</li>
-                <li>Summarize content</li>
-                <li>Locate visual elements</li>
-                <li>Answer questions about what's shown</li>
-              </ul>
-              
-              <div className="suggested-questions">
-                <p><strong>Try asking:</strong></p>
-                {suggestedQuestions.map((question, index) => (
-                  <button
-                    key={index}
-                    className="suggested-question"
-                    onClick={() => setInputMessage(question)}
-                  >
-                    "{question}"
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              message={message}
-              onTimestampClick={onTimestampClick}
-            />
-          ))
-        )}
-        
-        {loading && (
-          <div className="typing-indicator">
-            <div className="typing-dots">
-              <Spinner animation="grow" size="sm" />
-              <span className="ms-2">AI is thinking...</span>
-            </div>
-            {onCancelMessage && (
-              <Button
-                variant="outline-secondary"
-                size="sm"
-                onClick={onCancelMessage}
-                className="cancel-button"
-                title="Cancel request"
-              >
-                <i className="bi bi-x-circle">Cancel</i>
-              </Button>
-            )}
-          </div>
-        )}
-        
-        <div ref={messagesEndRef} />
-      </div>
-
-      <Form onSubmit={handleSubmit} className="chat-input-form">
-        <div className="input-group">
-          <Form.Control
-            ref={inputRef}
-            type="text"
-            value={inputMessage}
-            onChange={(e) => setInputMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder={videoId ? "Ask about the video..." : "Please load a video first"}
-            disabled={loading || !videoId}
-            className="chat-input"
-          />
-          <Button
-            type="submit"
-            variant="primary"
-            disabled={loading || !inputMessage.trim() || !videoId}
-            className="send-button"
-          >
-            {loading ? (
-              <Spinner animation="border" size="sm" />
-            ) : (
-              <i className="bi bi-send">Send</i>
-            )}
-          </Button>
+    <div className="chat-interface-container">
+      <div className="chat-interface-card">
+        <div className="chat-interface-header">
+          <h4 className="chat-interface-title">💬 Video Chat</h4>
+          <p className="chat-interface-subtitle">Ask questions about the video content</p>
         </div>
-      </Form>
+
+        <div className="chat-interface-body">
+          <div className="chat-messages-container" ref={messagesContainerRef}>
+            {messages.length === 0 ? (
+              <div className="chat-welcome">
+                <div className="chat-welcome-content">
+                  <div className="chat-welcome-icon">🤖</div>
+                  <h5 className="chat-welcome-title">Video analysis complete!</h5>
+                  <p className="chat-welcome-text">
+                    Ask me anything about the content, or click on timestamps to jump to specific sections.
+                  </p>
+                  
+                  <div className="chat-suggested-questions">
+                    <p className="chat-suggested-title">Try asking:</p>
+                    {suggestedQuestions.map((question, index) => (
+                      <button
+                        key={index}
+                        className="chat-suggested-question"
+                        onClick={() => setInputMessage(question)}
+                      >
+                        "{question}"
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              messages.map((message) => (
+                <ChatMessage
+                  key={message.id}
+                  message={message}
+                  onTimestampClick={onTimestampClick}
+                />
+              ))
+            )}
+            
+            {loading && (
+              <div className="chat-typing-indicator">
+                <div className="chat-typing-content">
+                  <div className="chat-typing-dots">
+                    <div className="chat-typing-dot"></div>
+                    <div className="chat-typing-dot"></div>
+                    <div className="chat-typing-dot"></div>
+                  </div>
+                  <span className="chat-typing-text">AI is thinking...</span>
+                </div>
+                {onCancelMessage && (
+                  <button
+                    onClick={onCancelMessage}
+                    className="chat-cancel-button"
+                    title="Cancel request"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            )}
+            
+            <div ref={messagesEndRef} />
+          </div>
+
+          <ChatInput
+            value={inputMessage}
+            onChange={setInputMessage}
+            onSend={handleSendMessage}
+            disabled={loading || !videoId}
+            placeholder={videoId ? "Ask about the video..." : "Please load a video first"}
+          />
+        </div>
+      </div>
     </div>
   );
 };

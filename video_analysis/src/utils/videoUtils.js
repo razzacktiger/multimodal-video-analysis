@@ -3,34 +3,44 @@
  */
 
 /**
- * Extract video ID from various YouTube URL formats
+ * Video utility functions for YouTube URL processing
+ */
+
+/**
+ * Extracts video ID from various YouTube URL formats
  * @param {string} url - YouTube URL
  * @returns {string|null} - Video ID or null if invalid
  */
 export const extractVideoId = (url) => {
-  if (!url) return null;
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&\n?#]+)/,
+    /^([a-zA-Z0-9_-]{11})$/
+  ];
   
-  try {
-    // Handle different YouTube URL formats
-    if (url.includes('youtube.com/watch?v=')) {
-      return new URL(url).searchParams.get('v');
-    } else if (url.includes('youtu.be/')) {
-      return url.split('youtu.be/')[1].split('?')[0];
-    }
-    return null;
-  } catch (error) {
-    console.error('Error parsing YouTube URL:', error);
-    return null;
+  for (const pattern of patterns) {
+    const match = url.match(pattern);
+    if (match) return match[1];
   }
+  return null;
 };
 
 /**
- * Convert video ID to embed URL
+ * Validates if a URL is a valid YouTube URL
+ * @param {string} url - URL to validate
+ * @returns {string|false} - Video ID if valid, false if invalid
+ */
+export const validateYouTubeUrl = (url) => {
+  const videoId = extractVideoId(url);
+  return videoId || false;
+};
+
+/**
+ * Creates YouTube embed URL from video ID
  * @param {string} videoId - YouTube video ID
- * @returns {string} - Embed URL
+ * @returns {string} - YouTube embed URL
  */
 export const createEmbedUrl = (videoId) => {
-  return `https://www.youtube.com/embed/${videoId}`;
+  return `https://www.youtube.com/embed/${videoId}?enablejsapi=1`;
 };
 
 /**

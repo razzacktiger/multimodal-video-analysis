@@ -1,16 +1,15 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import { extractTimestampLines } from './timestampUtils';
-
+import { extractTimestampLines } from "./timestampUtils";
 /**
  * AI Service for Google Gemini integration
  */
 class AIService {
   constructor(apiKey) {
     if (!apiKey) {
-      throw new Error('Google AI API key is required');
+      throw new Error("Google AI API key is required");
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.5-flash-preview-05-20" });
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
   }
 
   /**
@@ -21,7 +20,7 @@ class AIService {
   async generateTimestamps(videoId) {
     try {
       console.log(`AIService: Generating timestamps for video ID: ${videoId}`);
-      
+
       const result = await this.model.generateContent([
         "Please create time-stamps for the video and make sure its in the format of 00:00 - title. Provide clear, descriptive titles for each section.",
         {
@@ -30,69 +29,91 @@ class AIService {
           },
         },
       ]);
-      
+
       // Check if response was blocked
       if (result.response.promptFeedback?.blockReason) {
         const blockReason = result.response.promptFeedback.blockReason;
-        console.error('AIService: Response blocked due to:', blockReason);
-        
+        console.error("AIService: Response blocked due to:", blockReason);
+
         let errorMessage = `Content was blocked by safety filters (${blockReason}).`;
-        
+
         // Provide specific guidance based on block reason
-        switch(blockReason) {
-          case 'OTHER':
-            errorMessage += ' This video may contain content that doesn\'t meet AI safety guidelines. Try educational videos like tutorials, documentaries, or lectures.';
+        switch (blockReason) {
+          case "OTHER":
+            errorMessage +=
+              " This video may contain content that doesn't meet AI safety guidelines. Try educational videos like tutorials, documentaries, or lectures.";
             break;
-          case 'SAFETY':
-            errorMessage += ' This video contains content flagged for safety concerns. Please try a different video.';
+          case "SAFETY":
+            errorMessage +=
+              " This video contains content flagged for safety concerns. Please try a different video.";
             break;
-          case 'DEROGATORY':
-            errorMessage += ' This video contains language or content that may be offensive. Please try a different video.';
+          case "DEROGATORY":
+            errorMessage +=
+              " This video contains language or content that may be offensive. Please try a different video.";
             break;
           default:
-            errorMessage += ' Try with a different video - educational content works best.';
+            errorMessage +=
+              " Try with a different video - educational content works best.";
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       // Check if response has candidates
-      if (!result.response.candidates || result.response.candidates.length === 0) {
-        console.error('AIService: No response candidates available');
-        throw new Error('No response generated. The video might not be accessible or suitable for analysis.');
+      if (
+        !result.response.candidates ||
+        result.response.candidates.length === 0
+      ) {
+        console.error("AIService: No response candidates available");
+        throw new Error(
+          "No response generated. The video might not be accessible or suitable for analysis."
+        );
       }
-      
+
       // Check finish reason
       const finishReason = result.response.candidates[0].finishReason;
-      if (finishReason === 'SAFETY') {
-        console.error('AIService: Response blocked due to safety concerns');
-        throw new Error('Content was blocked by safety filters. Try with a different video.');
+      if (finishReason === "SAFETY") {
+        console.error("AIService: Response blocked due to safety concerns");
+        throw new Error(
+          "Content was blocked by safety filters. Try with a different video."
+        );
       }
-      
+
       const text = result.response.text();
       const timestamps = extractTimestampLines(text);
-      
+
       return timestamps;
     } catch (error) {
-      console.error('Error generating timestamps:', error);
-      
+      console.error("Error generating timestamps:", error);
+
       // Handle specific Google AI errors
-      if (error.message.includes('Response was blocked')) {
-        throw new Error('This video content cannot be analyzed due to safety restrictions. Please try a different video.');
+      if (error.message.includes("Response was blocked")) {
+        throw new Error(
+          "This video content cannot be analyzed due to safety restrictions. Please try a different video."
+        );
       }
-      if (error.message.includes('Text not available')) {
-        throw new Error('Unable to analyze this video. It may be private, restricted, or not accessible to the AI model.');
+      if (error.message.includes("Text not available")) {
+        throw new Error(
+          "Unable to analyze this video. It may be private, restricted, or not accessible to the AI model."
+        );
       }
-      if (error.message.includes('SAFETY')) {
-        throw new Error('Video content blocked by safety filters. Please try a different video.');
+      if (error.message.includes("SAFETY")) {
+        throw new Error(
+          "Video content blocked by safety filters. Please try a different video."
+        );
       }
-      
+
       // If it's already a custom error message, pass it through
-      if (error.message.includes('blocked by safety filters') || error.message.includes('not accessible')) {
+      if (
+        error.message.includes("blocked by safety filters") ||
+        error.message.includes("not accessible")
+      ) {
         throw error;
       }
-      
-      throw new Error('Failed to generate timestamps. Please check your API key and try again with a different video.');
+
+      throw new Error(
+        "Failed to generate timestamps. Please check your API key and try again with a different video."
+      );
     }
   }
 
@@ -105,22 +126,35 @@ class AIService {
    * @param {AbortSignal} signal - Optional abort signal for cancellation
    * @returns {Promise<object>} - AI response with content and timestamps
    */
-  async chatWithVideo(message, videoId, context = [], existingTimestamps = [], signal = null) {
+  async chatWithVideo(
+    message,
+    videoId,
+    context = [],
+    existingTimestamps = [],
+    signal = null
+  ) {
     try {
       // Check if already cancelled
       if (signal?.aborted) {
-        throw new Error('Request was cancelled');
+        throw new Error("Request was cancelled");
       }
 
       // Build context from previous messages
-      const conversationHistory = context.slice(-6).map(msg => 
-        `${msg.type === 'user' ? 'User' : 'Assistant'}: ${msg.content}`
-      ).join('\n');
+      const conversationHistory = context
+        .slice(-6)
+        .map(
+          (msg) =>
+            `${msg.type === "user" ? "User" : "Assistant"}: ${msg.content}`
+        )
+        .join("\n");
 
       // Build timestamp context
-      const timestampContext = existingTimestamps.length > 0 
-        ? `\n\nExisting video timestamps:\n${existingTimestamps.slice(0, 10).join('\n')}`
-        : '';
+      const timestampContext =
+        existingTimestamps.length > 0
+          ? `\n\nExisting video timestamps:\n${existingTimestamps
+              .slice(0, 10)
+              .join("\n")}`
+          : "";
 
       const prompt = `You are a helpful video analysis assistant. Analyze the video content and provide a clear, well-formatted response.
       IMPORTANT FORMATTING RULES:
@@ -150,7 +184,7 @@ class AIService {
 
       // Check for cancellation before making the request
       if (signal?.aborted) {
-        throw new Error('Request was cancelled');
+        throw new Error("Request was cancelled");
       }
 
       const result = await this.model.generateContent([
@@ -164,81 +198,102 @@ class AIService {
 
       // Check for cancellation after the request
       if (signal?.aborted) {
-        throw new Error('Request was cancelled');
+        throw new Error("Request was cancelled");
       }
-      
+
       // Check if response was blocked
       if (result.response.promptFeedback?.blockReason) {
         const blockReason = result.response.promptFeedback.blockReason;
-        console.error('AIService: Chat response blocked due to:', blockReason);
-        
+        console.error("AIService: Chat response blocked due to:", blockReason);
+
         let errorMessage = `Response was blocked by safety filters (${blockReason}).`;
-        
-        // Provide specific guidance based on block reason  
-        switch(blockReason) {
-          case 'OTHER':
-            errorMessage += ' This video may contain content that doesn\'t meet AI safety guidelines. Try asking about educational videos like tutorials, documentaries, or lectures.';
+
+        // Provide specific guidance based on block reason
+        switch (blockReason) {
+          case "OTHER":
+            errorMessage +=
+              " This video may contain content that doesn't meet AI safety guidelines. Try asking about educational videos like tutorials, documentaries, or lectures.";
             break;
-          case 'SAFETY':
-            errorMessage += ' This video contains content flagged for safety concerns. Please try a different video.';
+          case "SAFETY":
+            errorMessage +=
+              " This video contains content flagged for safety concerns. Please try a different video.";
             break;
-          case 'DEROGATORY':
-            errorMessage += ' This video contains language or content that may be offensive. Please try a different video.';
+          case "DEROGATORY":
+            errorMessage +=
+              " This video contains language or content that may be offensive. Please try a different video.";
             break;
           default:
-            errorMessage += ' Try asking about a different video - educational content works best.';
+            errorMessage +=
+              " Try asking about a different video - educational content works best.";
         }
-        
+
         throw new Error(errorMessage);
       }
-      
+
       // Check if response has candidates
-      if (!result.response.candidates || result.response.candidates.length === 0) {
-        console.error('AIService: No chat response candidates available');
-        throw new Error('No response generated. Try rephrasing your question.');
+      if (
+        !result.response.candidates ||
+        result.response.candidates.length === 0
+      ) {
+        console.error("AIService: No chat response candidates available");
+        throw new Error("No response generated. Try rephrasing your question.");
       }
-      
+
       // Check finish reason
       const finishReason = result.response.candidates[0].finishReason;
-      if (finishReason === 'SAFETY') {
-        console.error('AIService: Chat response blocked due to safety concerns');
-        throw new Error('Response blocked by safety filters. Try asking a different question.');
+      if (finishReason === "SAFETY") {
+        console.error(
+          "AIService: Chat response blocked due to safety concerns"
+        );
+        throw new Error(
+          "Response blocked by safety filters. Try asking a different question."
+        );
       }
 
       const responseText = result.response.text();
-      
+
       // Extract any new timestamps from the response
       const newTimestamps = extractTimestampLines(responseText);
-      
+
       return {
         content: responseText,
         timestamps: newTimestamps,
-        hasTimestamps: newTimestamps.length > 0
+        hasTimestamps: newTimestamps.length > 0,
       };
     } catch (error) {
       // Handle cancellation specifically
-      if (signal?.aborted || error.message === 'Request was cancelled') {
-        throw new Error('Request was cancelled');
+      if (signal?.aborted || error.message === "Request was cancelled") {
+        throw new Error("Request was cancelled");
       }
-      
+
       // Handle specific Google AI errors
-      if (error.message.includes('Response was blocked')) {
-        throw new Error('Response blocked by safety filters. Try asking a different question about the video.');
+      if (error.message.includes("Response was blocked")) {
+        throw new Error(
+          "Response blocked by safety filters. Try asking a different question about the video."
+        );
       }
-      if (error.message.includes('Text not available')) {
-        throw new Error('Unable to process your question about this video. Try rephrasing your question.');
+      if (error.message.includes("Text not available")) {
+        throw new Error(
+          "Unable to process your question about this video. Try rephrasing your question."
+        );
       }
-      if (error.message.includes('SAFETY')) {
-        throw new Error('Question blocked by safety filters. Try asking a different question.');
+      if (error.message.includes("SAFETY")) {
+        throw new Error(
+          "Question blocked by safety filters. Try asking a different question."
+        );
       }
-      
+
       // If it's already a custom error message, pass it through
-      if (error.message.includes('blocked by safety filters') || error.message.includes('Try asking') || error.message.includes('Try rephrasing')) {
+      if (
+        error.message.includes("blocked by safety filters") ||
+        error.message.includes("Try asking") ||
+        error.message.includes("Try rephrasing")
+      ) {
         throw error;
       }
-      
-      console.error('Error in chat with video:', error);
-      throw new Error('Failed to process your question. Please try again.');
+
+      console.error("Error in chat with video:", error);
+      throw new Error("Failed to process your question. Please try again.");
     }
   }
 
@@ -273,17 +328,17 @@ class AIService {
 
       const responseText = result.response.text();
       const timestamps = extractTimestampLines(responseText);
-      
+
       return {
         content: responseText,
         timestamps: timestamps,
-        query: query
+        query: query,
       };
     } catch (error) {
-      console.error('Error searching video content:', error);
-      throw new Error('Failed to search video content. Please try again.');
+      console.error("Error searching video content:", error);
+      throw new Error("Failed to search video content. Please try again.");
     }
   }
 }
 
-export default AIService; 
+export default AIService;

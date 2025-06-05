@@ -1,15 +1,25 @@
 import React from 'react';
-import { Form, Button } from 'react-bootstrap';
-import { extractVideoId, isValidYouTubeUrl } from '../../utils/videoUtils';
+import { extractVideoId } from '../../utils/videoUtils';
 import './URLInput.css';
 
 /**
- * URLInput Component - Handles YouTube URL input and validation
- * @param {function} onVideoLoad - Callback when valid video URL is submitted
- * @param {function} onError - Callback for error handling
+ * URLInput Component - Landing page for video URL input
+ * Supports both modern and legacy APIs for backward compatibility
  */
-const URLInput = ({ onVideoLoad, onError }) => {
-  const handleSubmit = (e) => {
+const URLInput = ({ 
+  // Modern props
+  videoUrl, 
+  onUrlChange, 
+  onSubmit, 
+  isProcessing, 
+  error, 
+  onEnterPress,
+  // Legacy props
+  onVideoLoad, 
+  onError 
+}) => {
+  // Handle form submission for legacy support
+  const handleLegacySubmit = (e) => {
     e.preventDefault();
     const inputUrl = e.target.elements.videoInput.value.trim();
     
@@ -18,38 +28,103 @@ const URLInput = ({ onVideoLoad, onError }) => {
       return;
     }
     
-    if (!isValidYouTubeUrl(inputUrl)) {
-      onError('Please enter a valid YouTube URL');
-      return;
-    }
-    
     const videoId = extractVideoId(inputUrl);
     if (videoId) {
       onVideoLoad(videoId);
       onError(''); // Clear any previous errors
     } else {
-      onError('Could not extract video ID from URL');
+      onError('Please enter a valid YouTube URL');
     }
   };
 
+  // For modern API, use controlled input
+  if (onUrlChange && onSubmit) {
+    return (
+      <div className="url-input-container">
+        <div className="url-input-card">
+          <div className="url-input-header">
+            <h3 className="url-input-title">
+              🎬 Enter YouTube Video URL
+            </h3>
+          </div>
+          
+          <div className="url-input-body">
+            <div className="url-input-field">
+              <input
+                type="url"
+                className={`url-input ${error ? 'url-input-error' : ''}`}
+                placeholder="Paste YouTube URL here..."
+                value={videoUrl}
+                onChange={(e) => onUrlChange(e.target.value)}
+                onKeyPress={(e) => onEnterPress && onEnterPress(e, onSubmit)}
+              />
+              {error && (
+                <div className="url-input-error-message">
+                  ❌ {error}
+                </div>
+              )}
+            </div>
+            
+            <button 
+              onClick={onSubmit}
+              disabled={isProcessing}
+              className={`url-submit-button ${isProcessing ? 'url-submit-button-disabled' : ''}`}
+            >
+              {isProcessing ? (
+                <div className="url-submit-loading">
+                  <div className="url-submit-spinner"></div>
+                  Analyzing Magic...
+                </div>
+              ) : (
+                <div className="url-submit-content">
+                  <span className="url-submit-emoji">🚀</span>
+                  Start Analysis
+                </div>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Legacy API with uncontrolled input
   return (
-    <Form onSubmit={handleSubmit} className="url-input-form">
-      <Form.Group className="mb-3 w-100">
-        <Form.Label className="subtitle">Enter YouTube Video URL</Form.Label>
-        <Form.Control
-          type="text"
-          name="videoInput"
-          placeholder="https://www.youtube.com/watch?v=..."
-          className="user-input"
-        />
-        <Form.Text className="text-muted">
-          <small>📝 Best results with: educational content, tutorials, lectures, or documentaries</small>
-        </Form.Text>
-      </Form.Group>
-      <Button variant="primary" type="submit" className="load-button">
-        Load Video
-      </Button>
-    </Form>
+    <div className="url-input-container">
+      <div className="url-input-card">
+        <div className="url-input-header">
+          <h3 className="url-input-title">
+            🎬 Enter YouTube Video URL
+          </h3>
+        </div>
+        
+        <div className="url-input-body">
+          <form onSubmit={handleLegacySubmit}>
+            <div className="url-input-field">
+              <input
+                type="url"
+                name="videoInput"
+                className="url-input"
+                placeholder="Paste YouTube URL here..."
+              />
+              <div className="url-input-help-text">
+                📝 Best results with: educational content, tutorials, lectures, or documentaries
+              </div>
+            </div>
+            
+            <button 
+              type="submit"
+              className="url-submit-button"
+            >
+              <div className="url-submit-content">
+                <span className="url-submit-emoji">🚀</span>
+                Load Video
+              </div>
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 
