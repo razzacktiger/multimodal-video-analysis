@@ -1,5 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { extractTimestampLines } from "./timestampUtils";
+import { YoutubeTranscript } from "youtube-transcript";
+
 /**
  * AI Service for Google Gemini integration
  */
@@ -9,7 +11,9 @@ class AIService {
       throw new Error("Google AI API key is required");
     }
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    this.model = this.genAI.getGenerativeModel({
+      model: "gemini-2.5-flash-preview-05-20",
+    });
   }
 
   /**

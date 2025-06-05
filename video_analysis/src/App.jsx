@@ -48,7 +48,7 @@ export default function App() {
 
   // Initialize AI service when API key is available
   useEffect(() => {
-    const API_KEY = import.meta.env.VITE_GOOGLE_AI_API_KEY;
+    const API_KEY = import.meta.env.VITE_GOOGLE_API_KEY;
     if (API_KEY) {
       try {
         setAiService(new AIService(API_KEY));
