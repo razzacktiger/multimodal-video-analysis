@@ -1,6 +1,5 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { extractTimestampLines } from "./timestampUtils";
-import { YoutubeTranscript } from "youtube-transcript";
 
 /**
  * AI Service for Google Gemini integration
