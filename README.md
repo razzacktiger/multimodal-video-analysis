@@ -2,10 +2,6 @@
 
 A powerful React-based web application that revolutionizes how you interact with YouTube videos through AI-powered analysis. Upload any YouTube video and engage with it through intelligent conversation, automated timestamp generation, and frame-based visual search.
 
-## Vercel Deployed App link
-Check out the current deployment here:
-https://multimodal-video-analysis-eight.vercel.app/
-
 ## ✨ Features
 
 ### 🤖 AI-Powered Video Chat
